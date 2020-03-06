@@ -9,7 +9,7 @@ This tool is called: `k8s-scheduler-tester`. It is a Kubernetes native tool used
 Monitoring is done by repeating the following flow every X seconds:
 
 - start timer
-- create a fresh Deployment for N pods and anti-affinity to ensure pods get deployed on different nodes
+- create a fresh Deployment for N 'canary' pods and anti-affinity to ensure pods get deployed on different nodes
 - wait for all pods to become ready, or timeout
 - calculate elapsed time and add it to a Prometheus Histogram
 - delete the Deployment terminating the pods created
@@ -17,7 +17,7 @@ Monitoring is done by repeating the following flow every X seconds:
 
 # Demo
 
-You will find a https://kind.sigs.k8s.io/ powered multi-node Kubernetes test suite in the `example/` directory.
+You will find a [Kind](https://kind.sigs.k8s.io/) (Kubernetes in Docker) powered multi-node Kubernetes test suite in the `example/` directory.
 
 - Run `setup.sh` to create a local Kubernetes cluster and deploy `k8s-scheduler-tester.
 - Run `test.sh` to exec into the tester container and request the metrics endpoint.
@@ -27,14 +27,13 @@ You will find a https://kind.sigs.k8s.io/ powered multi-node Kubernetes test sui
 
 Use `docker build -t k8s-scheduler-tester .` to build the Docker image.
 
+Or use the [`rtoma/k8s-scheduler-tester`](https://hub.docker.com/repository/docker/rtoma/k8s-scheduler-tester) Docker image on Docker Hub.
+
 # Deploy
 
-Use `kubectl apply -f kubernetes/` to create:
+Have a look in the `example/` directory for a complete Kubernetes manifest.
 
-- a single-pod Deployment for `k8s-scheduler-tester`
-- a (headless) Service to enable Prometheus discovery
-
-## Rolebinding
+# Security
 
 Since `k8s-scheduler-tester` creates/deletes new Deployments the used Kubernetes serviceaccount requires permissions. Following role rules should do the trick:
 
@@ -49,6 +48,8 @@ Since `k8s-scheduler-tester` creates/deletes new Deployments the used Kubernetes
   - list
   - watch
 ```
+
+For full ClusterRole and RoleBinding examples, have a look at the `examples/` directory.
 
 # Configuration
 
@@ -96,11 +97,10 @@ Once the `k8s-scheduler-tester` has been deployed, the pod will start running th
 
 ## Troubleshooting
 
-Check the `k8s-scheduler-tester` logs.
+Check the `k8s-scheduler-tester` log. Here are some diagnostic questions that may help:
 
-Some diagnostic questions:
-
-- Is it able to create new Deployments, Replicasets and Pods? Does the service account used have enough permissions?
+- Is the tester Pod in a 'Running' state? If not, describe the Pod, Replicaset or Deployment. Checking the events never hurts.
+- Is the tester able to create new Deployments, Replicasets and Pods? Does the service account used have enough permissions?
 - Is it trying to create the resources in the correct namespace?
 
 # Metrics exposed
