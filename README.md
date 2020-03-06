@@ -15,6 +15,14 @@ Monitoring is done by repeating the following flow every X seconds:
 - delete the Deployment terminating the pods created
 - expose the elapsed time
 
+# Demo
+
+You will find a https://kind.sigs.k8s.io/ powered multi-node Kubernetes test suite in the `example/` directory.
+
+- Run `setup.sh` to create a local Kubernetes cluster and deploy `k8s-scheduler-tester.
+- Run `test.sh` to exec into the tester container and request the metrics endpoint.
+- Run `teardown.sh` to destroy your local Kubernetes cluster.
+
 # Build
 
 Use `docker build -t k8s-scheduler-tester .` to build the Docker image.
@@ -32,23 +40,12 @@ Since `k8s-scheduler-tester` creates/deletes new Deployments the used Kubernetes
 
 ```yaml
 - apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-- apiGroups:
   - apps
   resources:
   - deployments
-  - replicasets
   verbs:
   - create
   - delete
-  - get
   - list
   - watch
 ```
