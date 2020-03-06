@@ -1,0 +1,109 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: k8s-scheduler-tester
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: k8s-scheduler-tester
+rules:
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - create
+  - delete
+  - list
+  - watch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: k8s-scheduler-tester
+  namespace: k8s-scheduler-tester
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: k8s-scheduler-tester
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: k8s-scheduler-tester
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: k8s-scheduler-tester
+  name: k8s-scheduler-tester
+  namespace: k8s-scheduler-tester
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: k8s-scheduler-tester
+  template:
+    metadata:
+      labels:
+        name: k8s-scheduler-tester
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Europe/Amsterdam
+        - name: OPT_REPLICAS
+          value: "3"
+        - name: OPT_TIMEOUT
+          value: "60"
+        - name: OPT_INTERVAL
+          value: "30"
+        - name: OPT_PROMETHEUS_PORT
+          value: "9999"
+        - name: OPT_IMAGE
+          value: busybox
+        - name: OPT_TARGET_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        image: rtoma/k8s-scheduler-tester:1.1.0
+        imagePullPolicy: Always
+        name: k8s-scheduler-tester
+        ports:
+        - containerPort: 9999
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 250Mi
+          requests:
+            cpu: 200m
+            memory: 120Mi
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: k8s-scheduler-tester
+  name: k8s-scheduler-tester
+  namespace: k8s-scheduler-tester
+spec:
+  clusterIP: None
+  ports:
+  - name: http-9999
+    port: 9999
+    protocol: TCP
+    targetPort: 9999
+  selector:
+    name: k8s-scheduler-tester
+  type: ClusterIP
