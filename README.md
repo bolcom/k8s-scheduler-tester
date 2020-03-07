@@ -87,7 +87,7 @@ Options:
 
 ## Environment variables
 
-Check out the `kubernetes/deployment.yaml` for an example of configuration using environment variables.
+Check out the Deployment definition in `example/k8s-scheduler-tester.yaml` for an example of configuration using environment variables.
 The environment variable names are like the command line parameter names with an `OPT_` prefix.
 Example: set `OPT_TARGET_NAMESPACE=foo` is similar to passing `--target_name foo`.
 
